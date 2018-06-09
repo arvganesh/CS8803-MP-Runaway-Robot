@@ -92,6 +92,30 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
     # if you haven't localized the target bot, make a guess about the next
     # position, then we move the bot and compare your guess to the true
     # next position. When you are close enough, we stop checking.
+    #For Visualization
+    import turtle    #You need to run this locally to use the turtle module
+    window = turtle.Screen()
+    window.bgcolor('white')
+    size_multiplier= 25.0  #change Size of animation
+    broken_robot = turtle.Turtle()
+    broken_robot.shape('turtle')
+    broken_robot.color('green')
+    broken_robot.resizemode('user')
+    broken_robot.shapesize(0.1, 0.1, 0.1)
+    measured_broken_robot = turtle.Turtle()
+    measured_broken_robot.shape('circle')
+    measured_broken_robot.color('red')
+    measured_broken_robot.resizemode('user')
+    measured_broken_robot.shapesize(0.1, 0.1, 0.1)
+    prediction = turtle.Turtle()
+    prediction.shape('arrow')
+    prediction.color('blue')
+    prediction.resizemode('user')
+    prediction.shapesize(0.1, 0.1, 0.1)
+    prediction.penup()
+    broken_robot.penup()
+    measured_broken_robot.penup()
+    #End of Visualization
     while not localized and ctr <= 10:
         ctr += 1
         measurement = target_bot.sense()
@@ -104,8 +128,18 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
             localized = True
         if ctr == 10:
             print "Sorry, it took you too many steps to localize the target."
+        #More Visualization
+        measured_broken_robot.setheading(target_bot.heading*180/pi)
+        measured_broken_robot.goto(measurement[0]*size_multiplier, measurement[1]*size_multiplier-200)
+        measured_broken_robot.stamp()
+        broken_robot.setheading(target_bot.heading*180/pi)
+        broken_robot.goto(target_bot.x*size_multiplier, target_bot.y*size_multiplier-200)
+        broken_robot.stamp()
+        prediction.setheading(target_bot.heading*180/pi)
+        prediction.goto(position_guess[0]*size_multiplier, position_guess[1]*size_multiplier-200)
+        prediction.stamp()
+        #End of Visualization
     return localized
-
 # This is a demo for what a strategy could look like. This one isn't very good.
 def naive_next_pos(measurement, OTHER = None):
     """This strategy records the first reported position of the target and
