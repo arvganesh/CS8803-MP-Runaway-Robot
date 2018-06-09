@@ -53,13 +53,21 @@
 # you will be marked correct and we will tell you how many steps it took
 # before your function successfully located the target bot.
 
+# pylint: disable=unused-wildcard-import
+# pylint: disable=invalid-name
+# pylint: disable=wildcard-import
+# pylint: disable=line-too-long
+# pylint: disable=redefined-builtin
+# pylint: disable=missing-docstring
+# pylint: disable=dangerous-default-value
+# pylint: disable=too-many-locals
+
 # These import steps give you access to libraries which you may (or may
 # not) want to use.
-from robot import *
 from math import *
-from matrix import *
 import random
-
+from matrix import *
+from robot import *
 
 # This is the function you have to write. The argument 'measurement' is a
 # single (x, y) point. This function will have to be called multiple
@@ -67,12 +75,38 @@ import random
 # next position. The OTHER variable that your function returns will be
 # passed back to your function the next time it is called. You can use
 # this to keep track of important information over time.
-def estimate_next_pos(measurement, OTHER = None):
+
+def estimate_next_pos(measurement, OTHER=None):
     """Estimate the next (x, y) position of the wandering Traxbot
     based on noisy (x, y) measurements."""
 
     # You must return xy_estimate (x, y), and OTHER (even if it is None)
     # in this order for grading purposes.
+    # to stay consistent with other functions...
+    OTHER = OTHER or []
+
+    if len(OTHER) < 1:
+        current_direction = abs(random.gauss(0, 2 * pi))
+        change_in_direction = 0
+        step = random.randint(0, 5)
+    else:
+        dx = measurement[0] - OTHER[-1][0] # change in x
+        dy = measurement[1]  - OTHER[-1][1] # change in y
+
+        # get the angle of the new location
+        angle = atan(dy / dx)
+
+        # apply change in direction to angle
+        change_in_direction = angle - OTHER[-1][2]
+        step = sqrt(dx * dx + dy * dy) # euclidean distance
+        current_direction = angle
+
+    X = measurement[0] + cos(current_direction + change_in_direction) * step
+    Y = measurement[1] + sin(current_direction + change_in_direction) * step
+    xy_estimate = [X, Y]
+
+    OTHER.append([measurement[0], measurement[1], current_direction])
+
     return xy_estimate, OTHER
 
 # A helper function you may find useful.
@@ -92,30 +126,6 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
     # if you haven't localized the target bot, make a guess about the next
     # position, then we move the bot and compare your guess to the true
     # next position. When you are close enough, we stop checking.
-    #For Visualization
-    import turtle    #You need to run this locally to use the turtle module
-    window = turtle.Screen()
-    window.bgcolor('white')
-    size_multiplier= 25.0  #change Size of animation
-    broken_robot = turtle.Turtle()
-    broken_robot.shape('turtle')
-    broken_robot.color('green')
-    broken_robot.resizemode('user')
-    broken_robot.shapesize(0.1, 0.1, 0.1)
-    measured_broken_robot = turtle.Turtle()
-    measured_broken_robot.shape('circle')
-    measured_broken_robot.color('red')
-    measured_broken_robot.resizemode('user')
-    measured_broken_robot.shapesize(0.1, 0.1, 0.1)
-    prediction = turtle.Turtle()
-    prediction.shape('arrow')
-    prediction.color('blue')
-    prediction.resizemode('user')
-    prediction.shapesize(0.1, 0.1, 0.1)
-    prediction.penup()
-    broken_robot.penup()
-    measured_broken_robot.penup()
-    #End of Visualization
     while not localized and ctr <= 10:
         ctr += 1
         measurement = target_bot.sense()
@@ -128,20 +138,10 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
             localized = True
         if ctr == 10:
             print "Sorry, it took you too many steps to localize the target."
-        #More Visualization
-        measured_broken_robot.setheading(target_bot.heading*180/pi)
-        measured_broken_robot.goto(measurement[0]*size_multiplier, measurement[1]*size_multiplier-200)
-        measured_broken_robot.stamp()
-        broken_robot.setheading(target_bot.heading*180/pi)
-        broken_robot.goto(target_bot.x*size_multiplier, target_bot.y*size_multiplier-200)
-        broken_robot.stamp()
-        prediction.setheading(target_bot.heading*180/pi)
-        prediction.goto(position_guess[0]*size_multiplier, position_guess[1]*size_multiplier-200)
-        prediction.stamp()
-        #End of Visualization
     return localized
+
 # This is a demo for what a strategy could look like. This one isn't very good.
-def naive_next_pos(measurement, OTHER = None):
+def naive_next_pos(measurement, OTHER=None):
     """This strategy records the first reported position of the target and
     assumes that eventually the target bot will eventually return to that
     position, so it always guesses that the first position will be the next."""
@@ -155,4 +155,4 @@ def naive_next_pos(measurement, OTHER = None):
 test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
 test_target.set_noise(0.0, 0.0, 0.0)
 
-# demo_grading(naive_next_pos, test_target)
+#demo_grading(estimate_next_pos, test_target)
