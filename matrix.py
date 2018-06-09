@@ -106,7 +106,7 @@ class matrix:
                 S = sum([res.value[k][i] * res.value[k][j] for k in range(i)])
                 if abs(S) < ztol:
                     S = 0.0
-    try:
+                try:
                    res.value[i][j] = (self.value[i][j] - S)/res.value[i][i]
                 except:
                    raise ValueError, "Zero diagonal"
@@ -125,7 +125,7 @@ class matrix:
             tjj = self.value[j][j]
             S = sum([self.value[j][k]*res.value[j][k] for k in range(j+1, self.dimx)])
             res.value[j][j] = 1.0/ tjj**2 - S/ tjj
-      for i in reversed(range(j)):
+            for i in reversed(range(j)):
                 res.value[j][i] = res.value[i][j] = -sum([self.value[i][k]*res.value[k][j] for k in range(i+1,self.dimx)])/self.value[i][i]
         return res
 
