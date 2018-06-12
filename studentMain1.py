@@ -140,7 +140,7 @@ def naive_next_pos(measurement, OTHER=None):
 
 # This is how we create a target bot. Check the robot.py file to understand
 # How the robot class behaves.
-test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
-test_target.set_noise(0.0, 0.0, 0.0)
-
-demo_grading(estimate_next_pos, test_target)
+#test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
+#test_target.set_noise(0.0, 0.0, 0.0)
+#
+#demo_grading(estimate_next_pos, test_target)
