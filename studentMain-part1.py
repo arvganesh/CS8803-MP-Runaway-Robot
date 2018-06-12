@@ -73,21 +73,19 @@ def estimate_next_pos(measurement, OTHER=None):
     # You must return xy_estimate (x, y), and OTHER (even if it is None)
     # in this order for grading purposes.
     # to stay consistent with other functions...
-    OTHER = OTHER or []
-
-    if len(OTHER) < 1:
+    if not OTHER:
         current_direction = abs(random.gauss(0, 2 * pi))
-        change_in_direction = 0
+        change_in_direction = 0.0
         step = random.randint(0, 5)
     else:
-        dx = measurement[0] - OTHER[-1][0] # change in x
-        dy = measurement[1]  - OTHER[-1][1] # change in y
+        dx = measurement[0] - OTHER[0] # change in x
+        dy = measurement[1]  - OTHER[1] # change in y
 
         # get the angle of the new location
         angle = atan(dy / dx)
 
         # apply change in direction to angle
-        change_in_direction = angle - OTHER[-1][2]
+        change_in_direction = angle - OTHER[2]
         step = sqrt(dx * dx + dy * dy) # euclidean distance
         current_direction = angle
 
@@ -95,7 +93,7 @@ def estimate_next_pos(measurement, OTHER=None):
     Y = measurement[1] + sin(current_direction + change_in_direction) * step
     xy_estimate = X, Y
 
-    OTHER.append([measurement[0], measurement[1], current_direction])
+    OTHER = measurement[0], measurement[1], current_direction
 
     return xy_estimate, OTHER
 
