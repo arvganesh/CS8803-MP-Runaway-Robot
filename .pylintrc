@@ -1,0 +1,3 @@
+[MESSAGES CONTROL]
+
+disable=unused-wildcard-import,invalid-name,wildcard-import,line-too-long,redefined-builtin,missing-docstring,dangerous-default-value,too-many-locals

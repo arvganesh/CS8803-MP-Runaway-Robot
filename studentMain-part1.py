@@ -53,15 +53,6 @@
 # you will be marked correct and we will tell you how many steps it took
 # before your function successfully located the target bot.
 
-# pylint: disable=unused-wildcard-import
-# pylint: disable=invalid-name
-# pylint: disable=wildcard-import
-# pylint: disable=line-too-long
-# pylint: disable=redefined-builtin
-# pylint: disable=missing-docstring
-# pylint: disable=dangerous-default-value
-# pylint: disable=too-many-locals
-
 # These import steps give you access to libraries which you may (or may
 # not) want to use.
 from math import *
@@ -75,7 +66,6 @@ from robot import *
 # next position. The OTHER variable that your function returns will be
 # passed back to your function the next time it is called. You can use
 # this to keep track of important information over time.
-
 def estimate_next_pos(measurement, OTHER=None):
     """Estimate the next (x, y) position of the wandering Traxbot
     based on noisy (x, y) measurements."""
@@ -103,7 +93,7 @@ def estimate_next_pos(measurement, OTHER=None):
 
     X = measurement[0] + cos(current_direction + change_in_direction) * step
     Y = measurement[1] + sin(current_direction + change_in_direction) * step
-    xy_estimate = [X, Y]
+    xy_estimate = X, Y
 
     OTHER.append([measurement[0], measurement[1], current_direction])
 
@@ -119,7 +109,7 @@ def distance_between(point1, point2):
 # This is here to give you a sense for how we will be running and grading
 # your code. Note that the OTHER variable allows you to store any
 # information that you want.
-def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
+def demo_grading(estimate_next_pos_fcn, target_bot, OTHER=None):
     localized = False
     distance_tolerance = 0.01 * target_bot.distance
     ctr = 0
@@ -155,4 +145,4 @@ def naive_next_pos(measurement, OTHER=None):
 test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
 test_target.set_noise(0.0, 0.0, 0.0)
 
-#demo_grading(estimate_next_pos, test_target)
+demo_grading(estimate_next_pos, test_target)
