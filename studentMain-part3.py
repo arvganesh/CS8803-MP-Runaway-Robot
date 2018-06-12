@@ -67,6 +67,7 @@ def kfilter(x, P, measurements):
 ## End of Problem Set 2 code
 ##################
 
+# pylint: disable=unused-argument
 def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER=None):
     # This function will be called after each time the target moves.
 
@@ -74,12 +75,12 @@ def next_move(hunter_position, hunter_heading, target_measurement, max_distance,
     # the progress of the hunt (or maybe some localization information). Your return format
     # must be as follows in order to be graded properly.
     if not OTHER: # first time calling this function, set up my OTHER variables.
+        P = matrix([[0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 1000., 0.], [0., 0., 0., 1000.]]) # initial uncertainty: 0 for positions x and y, 1000 for the two velocities
+        prev_angle = 0.
         measurements = [target_measurement]
         hunter_positions = [hunter_position]
         hunter_headings = [hunter_heading]
         OTHER = [measurements, hunter_positions, hunter_headings, P, 0.] # now I can keep track of history
-        P = matrix([[0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 1000., 0.], [0., 0., 0., 1000.]]) # initial uncertainty: 0 for positions x and y, 1000 for the two velocities
-        prev_angle = 0.
     else: # not the first time, update my history
         # OTHER[0].append(target_measurement)
         OTHER[1].append(hunter_position)
