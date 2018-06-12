@@ -33,17 +33,31 @@
 # As an added challenge, try to get to the target bot as quickly as
 # possible.
 
-from robot import *
 from math import *
+from robot import *
 from matrix import *
-import random
 
-def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER = None):
+def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER=None):
     # This function will be called after each time the target moves.
 
     # The OTHER variable is a place for you to store any historical information about
     # the progress of the hunt (or maybe some localization information). Your return format
     # must be as follows in order to be graded properly.
+    if not OTHER: # first time calling this function, set up my OTHER variables.
+        measurements = [target_measurement]
+        hunter_positions = [hunter_position]
+        hunter_headings = [hunter_heading]
+        OTHER = (measurements, hunter_positions, hunter_headings) # now I can keep track of history
+    else: # not the first time, update my history
+        OTHER[0].append(target_measurement)
+        OTHER[1].append(hunter_position)
+        OTHER[2].append(hunter_heading)
+        measurements, hunter_positions, hunter_headings = OTHER # now I can always refer to these variables
+
+    heading_to_target = get_heading(hunter_position, target_measurement)
+    heading_difference = heading_to_target - hunter_heading
+    turning = heading_difference # turn towards the target
+    distance = max_distance # full speed ahead!
     return turning, distance, OTHER
 
 def distance_between(point1, point2):
@@ -52,7 +66,7 @@ def distance_between(point1, point2):
     x2, y2 = point2
     return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-def demo_grading(hunter_bot, target_bot, next_move_fcn, OTHER = None):
+def demo_grading(hunter_bot, target_bot, next_move_fcn, OTHER=None):
     """Returns True if your next_move_fcn successfully guides the hunter_bot
     to the target_bot. This function is here to help you understand how we
     will grade your submission."""
@@ -93,11 +107,14 @@ def demo_grading(hunter_bot, target_bot, next_move_fcn, OTHER = None):
             print "It took too many steps to catch the target."
     return caught
 
+# imported from robot.py
+'''
 def angle_trunc(a):
     """This maps all angles to a domain of [-pi, pi]"""
     while a < 0.0:
         a += pi * 2
     return ((a + pi) % (pi * 2)) - pi
+'''
 
 def get_heading(hunter_position, target_position):
     """Returns the angle, in radians, between the target and hunter positions"""
@@ -125,13 +142,41 @@ def naive_next_move(hunter_position, hunter_heading, target_measurement, max_dis
 
     heading_to_target = get_heading(hunter_position, target_measurement)
     heading_difference = heading_to_target - hunter_heading
-    turning =  heading_difference # turn towards the target
+    turning = heading_difference # turn towards the target
     distance = max_distance # full speed ahead!
     return turning, distance, OTHER
 
-# target = robot(0.0, 10.0, 0.0, 2*pi / 30, 1.5)
-# measurement_noise = .05*target.distance
-# target.set_noise(0.0, 0.0, measurement_noise)
+##################
+## From Problem Set 2
+##################
+def filter(x, P, measurements):
+    dt = 0.1
+    u = matrix([[0.], [0.], [0.], [0.]]) # external motion
+    F = matrix([[1., 0., dt, 0.], [0., 1., 0., dt], [0., 0., 1., 0.], [0., 0., 0., 1.]])       # next state function: generalize the 2d version to 4d
+    H = matrix([[1., 0., 0., 0.], [0., 1., 0., 0.]])                                         # measurement function: reflect the fact that we observe x and y but not the two velocities
+    R = matrix([[0.1, 0.], [0., 0.1]])                                                       # measurement uncertainty: use 2x2 matrix with 0.1 as main diagonal
+    I = matrix([[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.]])       # 4d identity matrix
+
+    for _, m in enumerate(measurements):
+
+        # prediction
+        x = (F * x) + u
+        P = F * P * F.transpose()
+
+        # measurement update
+        Z = matrix([m])
+        y = Z.transpose() - (H * x)
+        S = H * P * H.transpose() + R
+        K = P * H.transpose() * S.inverse()
+        x = x + (K * y)
+        P = (I - (K * H)) * P
+##################
+## End of Problem Set 2 code
+##################
+
+target = robot(0.0, 10.0, 0.0, 2*pi / 30, 1.5)
+measurement_noise = .05*target.distance
+target.set_noise(0.0, 0.0, measurement_noise)
 
 hunter = robot(-10.0, -10.0, 0.0)
 
