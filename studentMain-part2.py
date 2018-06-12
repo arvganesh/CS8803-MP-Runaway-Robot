@@ -43,7 +43,27 @@ def estimate_next_pos(measurement, OTHER=None):
 
     # You must return xy_estimate (x, y), and OTHER (even if it is None)
     # in this order for grading purposes.
-    xy_estimate = (3.2, 9.1)
+
+    last, prev_direction, steps = OTHER or ((0.0, 0.0), 0.0, [])
+
+    dx = measurement[0] - last[0] # change in x
+    dy = measurement[1]  - last[1] # change in y
+
+    # get the angle of the new location
+    angle = atan2(dy, dx)
+
+    prev_step = distance_between(last, measurement)
+    steps.append(prev_step)
+    avg_step = np.mean(np.r_[steps])
+
+    current_direction = angle*2 - prev_direction
+
+    X = measurement[0] + cos(current_direction) * avg_step
+    Y = measurement[1] + sin(current_direction) * avg_step
+    xy_estimate = X, Y
+
+    OTHER = measurement, angle, steps
+
     return xy_estimate, OTHER
 
 # A helper function you may find useful.
