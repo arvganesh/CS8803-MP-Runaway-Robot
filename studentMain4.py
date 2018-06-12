@@ -20,12 +20,90 @@ from math import *
 from matrix import *
 import random
 
-def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER = None):
+##################
+## From Problem Set 2
+##################
+def kfilter(x, P, measurements):
+    dt = 0.1
+    u = matrix([[0.], [0.], [0.], [0.]]) # external motion
+    F = matrix([[1., 0., dt, 0.], [0., 1., 0., dt], [0., 0., 1., 0.], [0., 0., 0., 1.]])       # next state function: generalize the 2d version to 4d
+    H = matrix([[1., 0., 0., 0.], [0., 1., 0., 0.]])                                         # measurement function: reflect the fact that we observe x and y but not the two velocities
+    R = matrix([[0.1, 0.], [0., 0.1]])                                                       # measurement uncertainty: use 2x2 matrix with 0.1 as main diagonal
+    I = matrix([[1., 0., 0., 0.], [0., 1., 0., 0.], [0., 0., 1., 0.], [0., 0., 0., 1.]])       # 4d identity matrix
+
+    for _, m in enumerate(measurements):
+
+        # prediction
+        x = (F * x) + u
+        P = F * P * F.transpose()
+
+        # measurement update
+        Z = matrix([m])
+        y = Z.transpose() - (H * x)
+        S = H * P * H.transpose() + R
+        K = P * H.transpose() * S.inverse()
+        x = x + (K * y)
+        P = (I - (K * H)) * P
+
+    return x, P
+##################
+## End of Problem Set 2 code
+##################
+
+# pylint: disable=unused-argument
+def next_move(hunter_position, hunter_heading, target_measurement, max_distance, OTHER=None):
     # This function will be called after each time the target moves.
 
     # The OTHER variable is a place for you to store any historical information about
     # the progress of the hunt (or maybe some localization information). Your return format
     # must be as follows in order to be graded properly.
+    if not OTHER: # first time calling this function, set up my OTHER variables.
+        P = matrix([[0., 0., 0., 0.], [0., 0., 0., 0.], [0., 0., 1000., 0.], [0., 0., 0., 1000.]]) # initial uncertainty: 0 for positions x and y, 1000 for the two velocities
+        prev_angle = 0.
+        measurements = [target_measurement]
+        hunter_positions = [hunter_position]
+        hunter_headings = [hunter_heading]
+        OTHER = [measurements, hunter_positions, hunter_headings, P, 0.] # now I can keep track of history
+    else: # not the first time, update my history
+        # OTHER[0].append(target_measurement)
+        OTHER[1].append(hunter_position)
+        OTHER[2].append(hunter_heading)
+        measurements, hunter_positions, hunter_headings, P, prev_angle = OTHER # now I can always refer to these variables
+
+    ##################
+    ## Code change from naive_next_move
+    ##################
+    x_ = matrix([[target_measurement[0]], [target_measurement[1]], [0.], [0.]]) # initial state (location and velocity)
+
+    x, P = kfilter(x_, P, measurements[-20:])
+
+    k_x = x.value[0][0]
+    k_y = x.value[1][0]
+    k_x_y = (k_x, k_y)
+    dy = k_x_y[1] - measurements[-1][1]
+    dx = k_x_y[0] - measurements[-1][0]
+
+    angle = atan2(dy, dx)
+    prev_step = distance_between(measurements[-1], k_x_y)
+
+    heading = angle*2 - prev_angle
+    X = k_x_y[0] + cos(heading) * prev_step
+    Y = k_x_y[1] + sin(heading) * prev_step
+    xy_estimate = X, Y
+
+    measurements.append(k_x_y)
+    OTHER[3] = P
+    OTHER[4] = angle
+    ##################
+    ## Code change from naive_next_move
+    ##################
+
+    heading_to_target = get_heading(hunter_position, xy_estimate)
+    heading_difference = heading_to_target - hunter_heading
+    turning = heading_difference # turn towards the target
+    #distance = max_distance # full speed ahead!
+    distance = distance_between(hunter_position, xy_estimate)
+
     return turning, distance, OTHER
 
 def distance_between(point1, point2):
