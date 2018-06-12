@@ -26,10 +26,10 @@
 
 # These import steps give you access to libraries which you may (or may
 # not) want to use.
-from robot import *  # Check the robot.py tab to see how this works.
 from math import *
-from matrix import * # Check the matrix.py tab to see how this works.
-import random
+import numpy as np
+from matrix import *
+from robot import *
 
 # This is the function you have to write. Note that measurement is a
 # single (x, y) point. This function will have to be called multiple
@@ -37,7 +37,7 @@ import random
 # next position. The OTHER variable that your function returns will be
 # passed back to your function the next time it is called. You can use
 # this to keep track of important information over time.
-def estimate_next_pos(measurement, OTHER = None):
+def estimate_next_pos(measurement, OTHER=None):
     """Estimate the next (x, y) position of the wandering Traxbot
     based on noisy (x, y) measurements."""
 
@@ -56,7 +56,7 @@ def distance_between(point1, point2):
 # This is here to give you a sense for how we will be running and grading
 # your code. Note that the OTHER variable allows you to store any
 # information that you want.
-def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
+def demo_grading(estimate_next_pos_fcn, target_bot, OTHER=None):
     localized = False
     distance_tolerance = 0.01 * target_bot.distance
     ctr = 0
@@ -78,7 +78,7 @@ def demo_grading(estimate_next_pos_fcn, target_bot, OTHER = None):
     return localized
 
 # This is a demo for what a strategy could look like. This one isn't very good.
-def naive_next_pos(measurement, OTHER = None):
+def naive_next_pos(measurement, OTHER=None):
     """This strategy records the first reported position of the target and
     assumes that eventually the target bot will eventually return to that
     position, so it always guesses that the first position will be the next."""
@@ -93,4 +93,4 @@ test_target = robot(2.1, 4.3, 0.5, 2*pi / 34.0, 1.5)
 measurement_noise = 0.05 * test_target.distance
 test_target.set_noise(0.0, 0.0, measurement_noise)
 
-demo_grading(naive_next_pos, test_target)
+demo_grading(estimate_next_pos, test_target)
